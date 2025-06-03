@@ -1,47 +1,35 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Invoice Summary Tool</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #summary { white-space: pre-wrap; margin-top: 20px; }
-  </style>
-</head>
-<body>
-  <h1>Upload your Invoice PDF</h1>
-  <input type="file" id="fileInput" />
-  <button id="uploadBtn">Get Summary</button>
+<input type="file" id="fileInput" />
+<button onclick="uploadFile()">Upload</button>
+<pre id="result"></pre>
 
-  <div id="summary"></div>
+<script>
+  async function uploadFile() {
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
 
-  <script>
-    const uploadBtn = document.getElementById('uploadBtn');
-    const fileInput = document.getElementById('fileInput');
-    const summaryDiv = document.getElementById('summary');
+    if (!file) {
+      alert("Please select a file first!");
+      return;
+    }
 
-    uploadBtn.onclick = async () => {
-      if (!fileInput.files.length) {
-        alert('Please select a PDF file');
-        return;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("https://invback-production.up.railway.app/summarize", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch summary from backend.");
       }
 
-      const file = fileInput.files[0];
-      const formData = new FormData();
-      formData.append('file', file);
-
-      summaryDiv.textContent = 'Processing... Please wait.';
-
-      try {
-        const response = await fetch('https://invback-production.up.railway.app/summarize', {
-          method: 'POST',
-          body: formData,
-        });
-        const data = await response.json();
-        summaryDiv.textContent = data.summary || JSON.stringify(data);
-      } catch (err) {
-        summaryDiv.textContent = 'Error: ' + err.message;
-      }
-    };
-  </script>
-</body>
-</html>
+      const result = await response.json();
+      document.getElementById("result").textContent = JSON.stringify(result, null, 2);
+    } catch (error) {
+      console.error(error);
+      document.getElementById("result").textContent = "Error: " + error.message;
+    }
+  }
+</script>
