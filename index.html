@@ -1,35 +1,43 @@
-<input type="file" id="fileInput" />
-<button onclick="uploadFile()">Upload</button>
-<pre id="result"></pre>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Invoice Summarizer</title>
+</head>
+<body>
+  <h1>Upload Invoice</h1>
+  <input type="file" id="pdfFile" accept="application/pdf" />
+  <button onclick="upload()">Upload</button>
+  <p id="summary"></p>
 
-<script>
-  async function uploadFile() {
-    const fileInput = document.getElementById("fileInput");
-    const file = fileInput.files[0];
-
-    if (!file) {
-      alert("Please select a file first!");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await fetch("https://invback-production.up.railway.app/summarize", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch summary from backend.");
+  <script>
+    async function upload() {
+      const fileInput = document.getElementById("pdfFile");
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please upload a file");
+        return;
       }
 
-      const result = await response.json();
-      document.getElementById("result").textContent = JSON.stringify(result, null, 2);
-    } catch (error) {
-      console.error(error);
-      document.getElementById("result").textContent = "Error: " + error.message;
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch("https://invback-production.up.railway.app/summarize", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        document.getElementById("summary").textContent = "Summary: " + data.summary;
+      } catch (error) {
+        console.error(error);
+        alert("Error: " + error.message);
+      }
     }
-  }
-</script>
+  </script>
+</body>
+</html>
