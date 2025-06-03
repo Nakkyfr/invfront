@@ -32,7 +32,7 @@
       summaryDiv.textContent = 'Processing... Please wait.';
 
       try {
-        const response = await fetch('https://YOUR_BACKEND_URL_HERE/summarize', {
+        const response = await fetch('https://invback-production.up.railway.app/summarize', {
           method: 'POST',
           body: formData,
         });
